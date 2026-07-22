@@ -320,11 +320,15 @@ type OAuthPortConfig struct {
 	RequireMappingWhenNoCredentials *bool  `json:"require_mapping_when_no_credentials,omitempty"`
 }
 
-// PortConfig declares a container port a tool publishes to the host. Entries
-// with Publish true are bound on the run path (loopback by default; on the
-// gateway container under network isolation, the tool container otherwise).
+// PortConfig declares a container port a tool or feature publishes to the
+// host. Entries with Publish true are bound on the run path (loopback by
+// default; on the gateway container under network isolation, the tool
+// container otherwise). HostAuto requests an OS-assigned host port (Docker's
+// "0" sentinel) instead of mirroring the container port, so concurrent
+// sessions do not contend for the same host port.
 type PortConfig struct {
 	Container int    `json:"container"`
+	HostAuto  bool   `json:"host_auto,omitempty"`
 	Publish   bool   `json:"publish,omitempty"`
 	Label     string `json:"label,omitempty"`
 	OpenURL   string `json:"open_url,omitempty"`
@@ -367,6 +371,10 @@ type Extension struct {
 	DeniedDomains  []string          `json:"deniedDomains,omitempty"`
 	EnvVariables   map[string]string `json:"environment,omitempty"`
 	ProxyManaged   []string          `json:"proxyManaged,omitempty"`
+	// Ports mirrors Profile.Ports for mixins: declared entries with Publish
+	// true are bound for sessions that enable the feature, flowing through the
+	// same resolution as a user-supplied -p.
+	Ports []PortConfig `json:"ports,omitempty"`
 }
 
 func (e Extension) IsMixin() bool   { return e.Type == ExtensionKindMixin }
