@@ -1,0 +1,28 @@
+# Copyright (C) 2026 EclipseSource GmbH and others.
+#
+# This program and the accompanying materials are made available under the
+# terms of the MIT License, which is available in the project root.
+#
+# SPDX-License-Identifier: MIT
+
+schemaVersion: "1"
+kind: mixin
+name: diffity
+displayName: Diffity
+description: >-
+  Diffity (agent-driven git diff review UI), built from a pinned commit inside
+  the agent image. Opt-in; no npm registry package is trusted at runtime.
+defaultEnabled: false
+needsRoot: true
+priority: 80
+# Diffity serves only on container-local loopback (port 5391); no host port is
+# published. Viewing happens through the vnc feature: diffity drives the
+# contained Chromium itself — its CLI opens `/diff?ref=…` (or `/tree`) via the
+# `vnc-open` browser handler, so the intended ref is shown and its review
+# session stays active. Watch it with `enclave vnc-viewer` or any VNC client.
+#
+# Deliberately no VNC_URL: pointing the vnc supervisor at diffity's ref-less
+# root (`/`) would auto-forward the browser there, and the UI resolves a
+# ref-less load to the working-tree ("work") session and marks it active —
+# clobbering whatever ref a skill just opened and hiding those comments from
+# `diffity agent`.
