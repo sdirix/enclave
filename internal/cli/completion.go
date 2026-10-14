@@ -20,6 +20,7 @@ import (
 	"enclave/internal/config"
 	"enclave/internal/model"
 	"enclave/internal/netlog"
+	"enclave/internal/usage"
 )
 
 const shellCompletionLicenseHeader = `# Copyright (C) 2026 EclipseSource GmbH and others.
@@ -198,6 +199,19 @@ func registerCompletions(rootCmd *cobra.Command) error {
 		for name, fn := range logCompleters {
 			if err := logCmd.RegisterFlagCompletionFunc(name, fn); err != nil {
 				errs = append(errs, fmt.Errorf("network log completion for --%s: %w", name, err))
+			}
+		}
+	}
+
+	if usageCmd := findSubCommand(rootCmd, "usage"); usageCmd != nil {
+		usageCompleters := map[string]flagCompletionFunc{
+			"by":    staticValuesCompleter(usage.GroupByValues...),
+			"since": staticValuesCompleter("24h", "7d", "30d"),
+			"until": noValuesCompleter,
+		}
+		for name, fn := range usageCompleters {
+			if err := usageCmd.RegisterFlagCompletionFunc(name, fn); err != nil {
+				errs = append(errs, fmt.Errorf("usage completion for --%s: %w", name, err))
 			}
 		}
 	}

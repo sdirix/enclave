@@ -89,6 +89,7 @@ Enclave follows platform-standard roots: the XDG base directories on Linux and o
 - State: `~/.local/state/enclave/` (`$XDG_STATE_HOME`)
 - Cache: `~/.cache/enclave/` (`$XDG_CACHE_HOME`)
 - Embedded runtime assets: `~/.cache/enclave/assets/<content-hash>/`
+- Token usage archive: `~/.local/state/enclave/usage/` (host only, never removed by cleanup)
 - Per-project agent memory: `~/.local/state/enclave/projects/<hash>/<tool>/memory/` (agent-writable; Claude uses this root, Codex uses `<key>/` matching its config-store key; never shared between projects or agents)
 - User-defined subcommands: `~/.config/enclave/commands/{host,session}/` (executable files become `enclave <name>` verbs)
 

@@ -49,6 +49,7 @@ Per-project data is stored on the host and reused across sessions:
 | Shell history | `~/.local/state/enclave/projects/<project-hash>/<tool>/history/` |
 | Agent memory | `~/.local/state/enclave/projects/<project-hash>/<tool>/memory/` (Claude); `memory/<key>/` (Codex, matching the config-store key) |
 | Config/env/auth stores | Host directories under `~/.local/state/enclave/` (bind-mounted; no Docker volumes) |
+| Token usage archive | `~/.local/state/enclave/usage/` (global, host only, see [Usage Archive](runtime/stores.md#usage-archive)) |
 | Embedded runtime assets | `~/.cache/enclave/assets/<content-hash>/` |
 
 Extracted runtime asset entries are reproducible cache data. Deleting them is
@@ -96,6 +97,8 @@ Options:
 | `--keep <kinds>` | Preserve the listed stores (comma-separated or repeated): `cache` (package caches), `history` (shell history), `memory` (per-project agent memory, removed by default; no selective effect with `--all`), `auth` (auth stores, with `--all`) |
 | `--build-cache` | Prune Docker build cache (requires confirmation) |
 | `--dry-run` | Preview what would be removed |
+
+Cleanup archives the token usage of config stores before removing them. No cleanup removes the usage archive.
 
 Examples:
 

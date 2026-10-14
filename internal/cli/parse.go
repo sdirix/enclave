@@ -34,6 +34,7 @@ type Result struct {
 	Sources        model.OptionSources
 	ConfigView     model.ConfigView
 	NetworkLogView model.NetworkLogView
+	UsageView      model.UsageView
 	VersionJSON    bool
 	VersionShown   bool
 	ReviewTarget   string
@@ -164,6 +165,7 @@ directly: "enclave --tool codex" is equivalent to "enclave run --tool codex".`,
 		extensionCommand(res),
 		completionCommand(res),
 		reviewTargetCommand(res),
+		usageCommand(res),
 	)
 
 	// Completion registration is best-effort at runtime; correctness (every

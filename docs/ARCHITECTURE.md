@@ -109,6 +109,7 @@ The restricted network request flow has a separate
 - [`internal/extinstall/`](../internal/extinstall/) installs, updates, and removes tool/feature extensions from git repositories into the user-global extension root, backing `enclave tools|features add|update|remove`.
 - [`internal/app/network_cmd.go`](../internal/app/network_cmd.go) implements `enclave network` subcommands (status, print, diff, apply, add-domain, remove-domain, set-mode).
 - [`internal/app/network_log_cmd.go`](../internal/app/network_log_cmd.go) implements `enclave network log`: it resolves the logs in scope, filters the event stream, and feeds rows, follow, or summary output.
+- [`internal/app/usage_cmd.go`](../internal/app/usage_cmd.go) implements `enclave usage`: it archives new usage from all config stores, then filters, groups, and renders the archive.
 - [`internal/cli/network_command.go`](../internal/cli/network_command.go) defines Cobra command structure and flag parsing for the `network` subcommand tree.
 
 ### Configuration and Profiles
@@ -136,8 +137,10 @@ The restricted network request flow has a separate
 ### Tool Handlers
 - [`internal/tools/handler.go`](../internal/tools/handler.go) defines handler hooks used by runtime.
 - [`extensions/tools/<tool>/go/handler.go`](../extensions/tools/) registers per-tool behavior (ports and validation hooks).
+- [`extensions/tools/<tool>/go/usage.go`](../extensions/tools/) registers a `usage.Source` that parses the tool's session logs into usage records.
 
 ### Network Policy
+- [`internal/usage/`](../internal/usage/) owns the token usage archive: harvesting tool session logs from config stores, deduplicating records into month files, and aggregating them for `enclave usage`. Runtime and cleanup call it before a config store is used or removed.
 - [`internal/netlog/`](../internal/netlog/) owns the network audit log format: the `Event` type both gateway writers use, plus the file handling around it (append, scan, follow, rotation). It knows nothing about Docker, policy, or the CLI.
 - [`internal/netlogview/`](../internal/netlogview/) is the query side of that log — filter, aggregate, render — kept out of `netlog` so the gateway sidecar, which only appends and tails, neither links nor ships it.
 - [`internal/network/`](../internal/network/) implements network policy loading and merging for the `network.jsonc` configuration format. Handles dnsmasq config generation, JSONC parsing, and policy merge logic.

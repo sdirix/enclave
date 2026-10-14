@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"enclave/internal/logx"
@@ -131,7 +130,7 @@ func countSessionEvents(events []netlog.Event, session string) (pass int, deny i
 // renderSessionHeader renders a session boundary. Counts of zero are omitted so
 // a live follow, which cannot know them yet, still prints a clean boundary.
 func renderSessionHeader(event netlog.Event, pass int, deny int, opts RenderOptions) string {
-	session := strings.TrimSpace(displaySafe(event.Session))
+	session := strings.TrimSpace(util.DisplaySafe(event.Session))
 	if session == "" {
 		session = "unknown session"
 	}
@@ -269,7 +268,7 @@ func summaryDomainCell(domain string) string {
 	if domain == "" {
 		return "(no domain)"
 	}
-	return displaySafe(domain)
+	return util.DisplaySafe(domain)
 }
 
 // displaySafeEvent neutralizes the fields the terminal form prints. A denied
@@ -278,21 +277,12 @@ func summaryDomainCell(domain string) string {
 // whoever reads the log. Replacing them by runes also keeps column widths
 // honest, since padding counts runes.
 func displaySafeEvent(event netlog.Event) netlog.Event {
-	event.Type = displaySafe(event.Type)
-	event.Method = displaySafe(event.Method)
-	event.Domain = displaySafe(event.Domain)
-	event.Path = displaySafe(event.Path)
-	event.Rule = displaySafe(event.Rule)
+	event.Type = util.DisplaySafe(event.Type)
+	event.Method = util.DisplaySafe(event.Method)
+	event.Domain = util.DisplaySafe(event.Domain)
+	event.Path = util.DisplaySafe(event.Path)
+	event.Rule = util.DisplaySafe(event.Rule)
 	return event
-}
-
-func displaySafe(value string) string {
-	return strings.Map(func(r rune) rune {
-		if unicode.IsPrint(r) {
-			return r
-		}
-		return '?'
-	}, value)
 }
 
 func denyColor(deny int) logx.Color {

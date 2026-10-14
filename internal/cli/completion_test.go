@@ -178,3 +178,41 @@ func TestRegisterCompletionsCoversExtensionSubcommands(t *testing.T) {
 		}
 	}
 }
+
+func TestUsageFlagCompletions(t *testing.T) {
+	var res Result
+	rootCmd := &cobra.Command{Use: "enclave"}
+	addOptionFlags(rootCmd.PersistentFlags(), &res.Options, &res.Sources,
+		config.OptionGroupGlobal,
+		config.OptionGroupRun,
+		config.OptionGroupAuth,
+		config.OptionGroupBuild,
+	)
+	rootCmd.AddCommand(usageCommand(&res))
+	if err := registerCompletions(rootCmd); err != nil {
+		t.Fatalf("registerCompletions: %v", err)
+	}
+	usageCmd := findSubCommand(rootCmd, "usage")
+	if usageCmd == nil {
+		t.Fatal("usage command not found")
+	}
+
+	want := map[string][]string{
+		"by":    {"day", "month", "model", "project", "tool"},
+		"since": {"30d"},
+		"until": nil,
+	}
+	for flag, values := range want {
+		t.Run(flag, func(t *testing.T) {
+			completions, directive := completeFlag(t, usageCmd, flag)
+			if directive != cobra.ShellCompDirectiveNoFileComp {
+				t.Fatalf("--%s directive = %v, want NoFileComp", flag, directive)
+			}
+			for _, value := range values {
+				if !slices.Contains(completions, value) {
+					t.Fatalf("--%s completions = %v, missing %q", flag, completions, value)
+				}
+			}
+		})
+	}
+}

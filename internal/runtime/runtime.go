@@ -79,6 +79,7 @@ type ExecutionContext struct {
 	Ports          []backend.PortMapping
 	Secrets        []backend.SecretRelease
 	AuthSync       *backend.AuthSyncSpec
+	ConfigStore    *backend.StoreRef
 	Cleanup        func()
 	RunCtx         model.RunContext
 }
@@ -203,7 +204,10 @@ func (r *Runtime) Execute() error {
 	defer stop()
 	// The backend syncs auth files from the config store to the shared auth
 	// store after the container exits, per the request's AuthSync intent.
-	return r.runContainer(runCtx, ctx, releaseStartLock)
+	err = r.runContainer(runCtx, ctx, releaseStartLock)
+	// Before the deferred cleanup removes an ephemeral store.
+	r.archiveUsage(ctx.ConfigStore, r.run.Ephemeral)
+	return err
 }
 
 func (r *Runtime) acquireSessionStartLock() (func(), error) {
@@ -299,6 +303,7 @@ func (r *Runtime) prepareExecution() (*ExecutionContext, error) {
 		Ports:          networkResult.Ports,
 		Secrets:        secretReleases(prepared.SecretMapping),
 		AuthSync:       prepared.AuthSync,
+		ConfigStore:    prepared.Stores.Config,
 		Cleanup:        cleanup,
 		RunCtx:         runCtx,
 	}, nil
@@ -396,6 +401,9 @@ func (r *Runtime) prepareVolumes(containerName string, baseContainerName string,
 	volumeSuffix := r.currentConfigVolumeSuffix(containerName, baseContainerName)
 	vm := newVolumeManager(r)
 	prep, stores := vm.BuildPrep(volumeSuffix)
+	if r.run.Persist {
+		r.archiveUsage(stores.Config, false)
+	}
 	cleanup := r.ephemeralVolumeCleanup(stores)
 	state, err := r.backend.PrepareStores(context.Background(), prep)
 	if err != nil {

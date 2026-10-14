@@ -84,11 +84,22 @@ Ctrl-C or SIGTERM while a session is still starting aborts the start with exit c
 | `enclave config` | Show configuration values |
 | `enclave tools` | List available tool profiles (`list\|add\|remove\|update` manage installed tool extensions; see below) |
 | `enclave features` | List available feature extensions (`list\|add\|remove\|update` manage installed feature extensions; see below) |
+| `enclave usage` | Show token usage across all sessions |
 | `enclave completion <shell>` | Generate shell completion |
 
 `enclave version` prints one line suitable for bug reports; `--json` emits the version, commit, and date as an object. Builds from modified source append `-dirty` to the commit; unavailable values are reported as `unknown`.
 
 `enclave config` flags: `--view <mode>` selects the output view — `matrix` (default), `source` (where each value comes from), `diff` (values overridden by higher precedence), or `effective` (effective values only); `--json` emits JSON output.
+
+`enclave usage` archives new usage from every config store, then reports the [usage archive](runtime/stores.md#usage-archive):
+
+| Flag | Description |
+|------|-------------|
+| `--by <day\|month\|model\|project\|tool>` | Group rows (default `day`, in local time) |
+| `--since <date\|ts\|dur>` | Only usage since a local date (`2026-10-01`), an RFC3339 timestamp, or a duration ago (`12h`, `30d`) |
+| `--until <date\|ts\|dur>` | Only usage before a timestamp or duration ago, or up to and including a local date |
+| `--tool <tool>` | Only one tool's usage |
+| `--json` | Emit `{schemaVersion, groupBy, since, until, tool, rows[], total}` (the integration contract). Each row has `key`, `requests`, and `tokens` with `input`, `cacheWrite`, `cacheRead`, `output`, `reasoning`, and `total` |
 
 ### Extensions
 
@@ -298,7 +309,7 @@ Persistent defaults can be set in `~/.config/enclave/config.json` (global) or `~
 
 ## Tool selection
 
-The tool is unset by default. The first command that needs one asks once which coding agent to use and saves the answer as `"tool"` in `~/.config/enclave/config.json`; later runs read it from there and never ask again. A command needs a tool when it starts a session or builds its image (`run`, `shell`, `continue`, `resume`, `exec`, and `update` without explicit tool arguments) or scopes policy, stores, or containers by tool (`info`, `auth import`, `auth export`, `network …`, `cleanup` without `--all`, and `stop` without a session argument). The question is only asked when stdin, stdout, and stderr are terminals and no `--json` or `--yes` was given; without a terminal, or when the question goes unanswered, the command fails with a message naming `--tool` and the `tool` key instead of guessing an agent. Commands that never read the default tool (`ps`, `status`, `attach`, `tools`, `features`, `config`, `review-target`, `theia`, …) neither ask nor fail; they take `--tool` at most as an explicit filter.
+The tool is unset by default. The first command that needs one asks once which coding agent to use and saves the answer as `"tool"` in `~/.config/enclave/config.json`; later runs read it from there and never ask again. A command needs a tool when it starts a session or builds its image (`run`, `shell`, `continue`, `resume`, `exec`, and `update` without explicit tool arguments) or scopes policy, stores, or containers by tool (`info`, `auth import`, `auth export`, `network …`, `cleanup` without `--all`, and `stop` without a session argument). The question is only asked when stdin, stdout, and stderr are terminals and no `--json` or `--yes` was given; without a terminal, or when the question goes unanswered, the command fails with a message naming `--tool` and the `tool` key instead of guessing an agent. Commands that never read the default tool (`ps`, `status`, `attach`, `tools`, `features`, `config`, `review-target`, `theia`, `usage`, …) neither ask nor fail; they take `--tool` at most as an explicit filter.
 
 The menu lists every installed agent. The IDE profiles (`theia`, `theia-next`) are not offered: they attach a host IDE to a container rather than running an agent in the terminal. Pick them with `--tool theia` or the `tool` key.
 
@@ -336,7 +347,7 @@ The default backend is `auto`: enclave uses docker when its CLI is on `PATH`, ot
 
 Rootless podman without idmapped-mount support has to copy an image into a layer for the keep-id mapping the first time that image starts, and again after every image rebuild. enclave triggers this copy before the gateway starts and prints a notice when it takes longer than two seconds; for multi-gigabyte tool images it takes minutes, during which podman blocks every other podman command, including `enclave ps`.
 
-Commands that use an engine accept `--backend`, including session management, `update`, `theia`/`theia-next`, `info`, `cleanup`, `auth import`/`export`, `img import`, and the engine-using `network` subcommands (`status`, `log`, `apply`, and policy mutations). Without the flag they use the configured backend or detection. Engine-independent commands such as `network print` and `network diff` do not accept it; `config` accepts it to preview option resolution. `cleanup --build-cache` reports nothing to reclaim under podman, which keeps no separate build cache.
+Commands that use an engine accept `--backend`, including session management, `update`, `theia`/`theia-next`, `info`, `cleanup`, `auth import`/`export`, `img import`, and the engine-using `network` subcommands (`status`, `log`, `apply`, and policy mutations). Without the flag they use the configured backend or detection. Engine-independent commands such as `network print`, `network diff`, and `usage` do not accept it; `config` accepts it to preview option resolution. `cleanup --build-cache` reports nothing to reclaim under podman, which keeps no separate build cache.
 
 ## Experimental QEMU backend
 

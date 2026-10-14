@@ -22,6 +22,7 @@ import (
 	"enclave/internal/logx"
 	"enclave/internal/model"
 	"enclave/internal/prompt"
+	"enclave/internal/usage"
 	"enclave/internal/util"
 )
 
@@ -136,6 +137,7 @@ func runCleanup(run model.RunOptions, cleanup model.CleanupOptions) int {
 			return 0
 		}
 		cleanupContainers(containerNames)
+		archiveUsageBeforeRemoval(home, storeDirs)
 		cleanupDirs(storeDirs)
 		cleanupBuildCache(cleanup)
 		logx.Successf("Cleanup complete")
@@ -162,11 +164,29 @@ func runCleanup(run model.RunOptions, cleanup model.CleanupOptions) int {
 		return 0
 	}
 
+	archiveUsageBeforeRemoval(home, dirPaths)
 	cleanupDirs(dirPaths)
 	cleanupBuildCache(cleanup)
 
 	logx.Successf("Cleanup complete")
 	return 0
+}
+
+// archiveUsageBeforeRemoval copies the token usage of every config store in
+// dirs into the usage archive, which no cleanup removes.
+func archiveUsageBeforeRemoval(home string, dirs []cleanupDir) {
+	paths := make([]string, 0, len(dirs))
+	for _, dir := range dirs {
+		paths = append(paths, dir.Path)
+	}
+	stores := usage.StoresUnder(home, paths)
+	if len(stores) == 0 {
+		return
+	}
+	opts := usage.Options{Removing: true, Wait: true, Notify: logx.Infof}
+	if _, err := usage.Harvest(home, stores, opts); err != nil {
+		logx.Warnf("Failed to archive token usage: %v", err)
+	}
 }
 
 func resolveEphemeralContainers(run model.RunOptions, cleanup model.CleanupOptions, project model.Project) ([]string, error) {

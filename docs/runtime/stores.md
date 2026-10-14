@@ -133,6 +133,59 @@ behind until the spec loads again. Every other plan warns and proceeds under the
 default scope, which is the plan a working spec would have produced anyway, so a
 broken extension never blocks the removal of its own state.
 
+## Usage Archive
+
+Enclave copies model token usage from tool session logs into a global archive
+at `~/.local/state/enclave/usage/`. The archive outlives the config stores, so
+usage of ephemeral sessions, removed stores, and logs the tool expires itself
+(Claude's `cleanupPeriodDays`) stays available. `enclave usage` reports it. No
+cleanup removes the archive. Delete the directory to reset it. It is read and
+written on the host only and never mounted into a container.
+
+| Tool | Config-store logs |
+|------|-------------------|
+| Claude | `projects/**/*.jsonl` session and subagent transcripts |
+| Codex | `sessions/` and `archived_sessions/` rollouts |
+
+A store is archived:
+
+- before a session starts on it, which saves logs the tool expires on startup
+- after a foreground session exits, before an ephemeral store is removed
+- before `enclave cleanup` removes it
+- on every `enclave usage`, for all stores including those of running sessions
+
+Archiving before a start or after the exit of a persistent store is skipped
+while another process archives. `enclave usage`, cleanup, and ephemeral exits
+wait for it.
+
+The archive holds one JSONL file per UTC month (`<YYYY-MM>.jsonl`) with one line
+per model response:
+
+| Field | Content |
+|-------|---------|
+| `key` | Unique response ID, prefixed with the tool |
+| `tool`, `model`, `timestamp` | Response metadata |
+| `session`, `cwd`, `gitBranch`, `version`, `effort` | Tool session context |
+| `project`, `projectHash`, `store` | Project directory, project hash, and config-store key |
+| `tokens` | `input` (uncached), `cacheWrite`, `cacheRead`, `output` (including reasoning), `reasoning` |
+| `raw` | The source log line. Claude lines omit `message.content`, so the archive holds no conversation text |
+
+The logs are agent-writable, so the archive drops `raw` above 64 KiB and
+other text fields above 4 KiB, and hashes keys longer than 256 bytes or with
+characters outside `[A-Za-z0-9._:-]`.
+
+Keys deduplicate repeated lines and history that forked sessions copy. Claude
+counts include every attempt in `usage.iterations`, such as compaction. Claude
+logs partial output counts while a response streams, and a persistent store can
+be shared with a running session, so a response without a final count is
+archived once its log has been unchanged for 30 minutes, or right away when
+its store is about to be removed. Codex rollouts from versions without
+per-response `token_usage_record` items fall back to `token_count` events.
+Requests a tool does not write to its logs are not counted. `sources.json`
+records the logs already read. Deleting it only causes a full re-read.
+
+Source: [`internal/usage/`](../../internal/usage/), [`extensions/tools/claude/go/usage.go`](../../extensions/tools/claude/go/usage.go), [`extensions/tools/codex/go/usage.go`](../../extensions/tools/codex/go/usage.go)
+
 ## Managed Skills
 
 Tools opt into managed skills with `sandbox.skillsDir` in
@@ -410,7 +463,8 @@ Source: [`internal/runtime/volume_manager.go`](../../internal/runtime/volume_man
 
 `enclave cleanup` removes persistent stores and other host-side data.
 `--ephemeral` cleanup removes ephemeral config-store directories (every
-`config-store/<key>` other than `default`).
+`config-store/<key>` other than `default`). Token usage of removed config
+stores is archived first. See [Usage Archive](#usage-archive).
 
 ## Source Files
 

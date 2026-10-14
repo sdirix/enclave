@@ -167,6 +167,7 @@ func TestActionNeedsTool(t *testing.T) {
 		{name: "status", parsed: cli.Result{Action: "status"}, want: false},
 		{name: "attach", parsed: cli.Result{Action: "attach"}, want: false},
 		{name: "tools", parsed: cli.Result{Action: "tools"}, want: false},
+		{name: "usage", parsed: cli.Result{Action: "usage"}, want: false},
 		{name: "features", parsed: cli.Result{Action: "features"}, want: false},
 		{name: "extension-manage", parsed: cli.Result{Action: cli.ActionExtensionManage}, want: false},
 		{name: "config", parsed: cli.Result{Action: "config"}, want: false},

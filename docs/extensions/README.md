@@ -56,7 +56,8 @@ extensions/
 │       ├── install.sh             # Docker build installation
 │       └── go/                    # Optional Go code
 │           ├── hooks.go           # Auth hooks
-│           └── handler.go         # Tool handler
+│           ├── handler.go         # Tool handler
+│           └── usage.go           # Token usage source
 └── features/
     ├── github-cli/
     │   ├── spec.yaml
@@ -871,7 +872,7 @@ CLI sets it to the single selected tool):
 ### Go Registration (Tools Only)
 
 1. Extensions with `go/` directory are imported via `go generate ./cmd/enclave` (outputs `cmd/enclave/tool_imports.go`)
-2. `init()` functions register hooks via `auth.RegisterHooks()` and handlers via `tools.RegisterHandler()`
+2. `init()` functions register hooks via `auth.RegisterHooks()`, handlers via `tools.RegisterHandler()`, and token usage sources via `usage.RegisterSource()` (see [Usage Archive](../runtime/stores.md#usage-archive))
 
 ### Auth Hook Phases (Tools Only)
 

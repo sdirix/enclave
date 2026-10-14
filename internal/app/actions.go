@@ -30,6 +30,7 @@ var backendFreeActions = map[string]bool{
 	"review-target":           true,
 	"ssh-init":                true,
 	"tools":                   true,
+	"usage":                   true,
 	"validate-extensions":     true,
 	cli.ActionExtensionManage: true,
 }
@@ -55,6 +56,7 @@ var toolFreeActions = map[string]bool{
 	"theia":                   true,
 	"theia-next":              true,
 	"tools":                   true,
+	"usage":                   true,
 	"validate-extensions":     true,
 	cli.ActionExtensionManage: true,
 }

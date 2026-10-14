@@ -176,7 +176,7 @@ func TestPromptAllowed(t *testing.T) {
 }
 
 func TestActionUsesBackend(t *testing.T) {
-	for _, action := range []string{"tools", "features", "extension-list", cli.ActionExtensionManage, "config", "review-target", "network-print", "network-diff", "devcontainer-generate", "ssh-init", "validate-extensions"} {
+	for _, action := range []string{"tools", "features", "extension-list", cli.ActionExtensionManage, "config", "review-target", "network-print", "network-diff", "devcontainer-generate", "ssh-init", "usage", "validate-extensions"} {
 		if actionUsesBackend(action) {
 			t.Fatalf("%s never touches an engine and must not resolve the backend", action)
 		}

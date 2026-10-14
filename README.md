@@ -206,6 +206,7 @@ enclave ps                  # List running containers (--all for stopped, --json
 enclave exec                # Attach to running container
 enclave shell               # Open interactive shell in container
 enclave info                # Show config and image details
+enclave usage               # Token usage across all sessions (--by model, --json)
 enclave version             # Show binary version and source commit (--json; alias: --version)
 ```
 

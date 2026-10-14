@@ -258,6 +258,12 @@ func HostProjectNetworkLogPath(home string, projectHash string, tool string) str
 	return filepath.Join(HostProjectLogsDir(home, projectHash, tool), "network.log")
 }
 
+// HostUsageDir holds the token usage archive. It is global and outside the
+// projects tree, so no cleanup removes it.
+func HostUsageDir(home string) string {
+	return filepath.Join(hostStateRoot(home), "usage")
+}
+
 func HostProjectGatewayConfigDir(home string, projectHash string, tool string) string {
 	return filepath.Join(HostProjectToolDir(home, projectHash, tool), "gateway-config")
 }

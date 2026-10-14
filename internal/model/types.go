@@ -209,6 +209,14 @@ type NetworkLogView struct {
 	Session string
 }
 
+// UsageView holds the flags of `enclave usage`. --tool is read from Options.
+type UsageView struct {
+	By    string
+	Since string
+	Until string
+	JSON  bool
+}
+
 type ConfigView struct {
 	// Mode selects the config output view: "matrix" (default), "effective",
 	// "diff", or "source".

@@ -49,6 +49,7 @@ var BuiltinNames = []string{
 	"theia-next",
 	"tools",
 	"update",
+	"usage",
 	"validate-extensions",
 	"version",
 }

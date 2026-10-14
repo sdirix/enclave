@@ -169,6 +169,10 @@ func Run(args []string) int {
 		return runReviewTarget(projectDir, parsed.ReviewTarget)
 	}
 
+	if parsed.Action == "usage" {
+		return runUsage(parsed.Options, parsed.UsageView)
+	}
+
 	if parsed.Action == "theia" || parsed.Action == "theia-next" {
 		return runTheia(theia.Variant(parsed.Action), projectDir, parsed.Options)
 	}

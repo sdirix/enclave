@@ -42,6 +42,20 @@ func WriteProjectMarkers(home string, projectHash string, realDir string) {
 	_ = writeProjectMarker(HostProjectDir(home, projectHash), realDir)
 }
 
+// ReadProjectMarker returns the project directory recorded for projectHash, or
+// "" when no marker exists.
+func ReadProjectMarker(home string, projectHash string) string {
+	data, err := os.ReadFile(filepath.Join(HostProjectDir(home, projectHash), projectMarkerFilename))
+	if err != nil {
+		return ""
+	}
+	var marker projectMarker
+	if err := json.Unmarshal(data, &marker); err != nil {
+		return ""
+	}
+	return marker.Path
+}
+
 func writeProjectMarker(dir string, realDir string) error {
 	if strings.TrimSpace(dir) == "" {
 		return nil

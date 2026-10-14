@@ -78,7 +78,7 @@ func TestBackendFlagOnEngineCommands(t *testing.T) {
 
 func TestBackendFlagRejectedOnEngineFreeCommands(t *testing.T) {
 	for _, command := range [][]string{
-		{"tools"}, {"features"}, {"review-target"},
+		{"tools"}, {"features"}, {"review-target"}, {"usage"},
 		{"network", "print"}, {"network", "diff"}, {"devcontainer", "generate"},
 	} {
 		t.Run(strings.Join(command, " "), func(t *testing.T) {
